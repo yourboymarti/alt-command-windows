@@ -150,7 +150,7 @@ internal readonly record struct HotkeyCombination(ModifierKeys Modifiers, Keys K
             }
         }
 
-        if (part.StartsWith('F', StringComparison.OrdinalIgnoreCase)
+        if (part.StartsWith("F", StringComparison.OrdinalIgnoreCase)
             && int.TryParse(part[1..], NumberStyles.None, CultureInfo.InvariantCulture, out var functionNumber)
             && functionNumber is >= 1 and <= 24)
         {
