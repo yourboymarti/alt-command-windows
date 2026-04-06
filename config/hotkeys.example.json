@@ -1,0 +1,38 @@
+{
+  "disabledProcesses": [
+    "Code",
+    "WindowsTerminal"
+  ],
+  "remaps": [
+    {
+      "from": "Alt+C",
+      "to": "Ctrl+C",
+      "description": "Copy"
+    },
+    {
+      "from": "Alt+V",
+      "to": "Ctrl+V",
+      "description": "Paste"
+    },
+    {
+      "from": "Alt+W",
+      "to": "Ctrl+W",
+      "description": "Close tab"
+    },
+    {
+      "from": "Alt+T",
+      "to": "Ctrl+T",
+      "description": "New tab"
+    },
+    {
+      "from": "Alt+Shift+T",
+      "to": "Ctrl+Shift+T",
+      "description": "Reopen closed tab"
+    },
+    {
+      "from": "Alt+Q",
+      "to": "Alt+F4",
+      "description": "Quit active window"
+    }
+  ]
+}
