@@ -13,9 +13,18 @@ internal sealed class RemapEntry
         Description = description;
     }
 
+    public RemapEntry(string from, IEnumerable<string> toSequence, string? description = null)
+    {
+        From = from;
+        ToSequence = [.. toSequence];
+        Description = description;
+    }
+
     public string From { get; set; } = string.Empty;
 
     public string To { get; set; } = string.Empty;
+
+    public List<string> ToSequence { get; set; } = [];
 
     public string? Description { get; set; }
 }

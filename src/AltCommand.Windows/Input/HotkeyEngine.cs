@@ -6,7 +6,7 @@ namespace AltCommand.Windows.Input;
 internal sealed class HotkeyEngine
 {
     private readonly KeyStrokeSender _keyStrokeSender;
-    private Dictionary<HotkeyCombination, HotkeyCombination> _remaps = new();
+    private Dictionary<HotkeyCombination, RemapAction> _remaps = new();
     private HashSet<string> _disabledProcesses = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<Keys> _suppressedRemapKeys = [];
     private readonly HashSet<Keys> _nativePassthroughKeys = [];
@@ -25,10 +25,11 @@ internal sealed class HotkeyEngine
 
     public void UpdateConfiguration(AppConfig config)
     {
-        var remaps = new Dictionary<HotkeyCombination, HotkeyCombination>();
+        var remaps = new Dictionary<HotkeyCombination, RemapAction>();
         var errors = new List<string>();
+        var entries = config.Remaps ?? new List<RemapEntry>();
 
-        foreach (var entry in config.Remaps)
+        foreach (var entry in entries)
         {
             if (!HotkeyCombination.TryParse(entry.From, out var from))
             {
@@ -36,13 +37,13 @@ internal sealed class HotkeyEngine
                 continue;
             }
 
-            if (!HotkeyCombination.TryParse(entry.To, out var to))
+            if (!TryBuildRemapAction(entry, out var action, out var validationError))
             {
-                errors.Add($"Invalid target shortcut '{entry.To}'.");
+                errors.Add(validationError ?? $"Invalid target shortcut for '{entry.From}'.");
                 continue;
             }
 
-            if (!remaps.TryAdd(from, to))
+            if (!remaps.TryAdd(from, action))
             {
                 errors.Add($"Duplicate source shortcut '{entry.From}'.");
             }
@@ -55,7 +56,7 @@ internal sealed class HotkeyEngine
 
         _remaps = remaps;
         _disabledProcesses = new HashSet<string>(
-            config.DisabledProcesses
+            (config.DisabledProcesses ?? new List<string>())
                 .Select(NormalizeProcessName)
                 .Where(value => !string.IsNullOrWhiteSpace(value)),
             StringComparer.OrdinalIgnoreCase);
@@ -106,7 +107,7 @@ internal sealed class HotkeyEngine
         if (_remaps.TryGetValue(trigger, out var target))
         {
             ReleaseNativeAltSession();
-            _keyStrokeSender.SendCombination(target);
+            _keyStrokeSender.SendSequence(target.Steps);
             _suppressedRemapKeys.Add(key);
             return true;
         }
@@ -254,5 +255,56 @@ internal sealed class HotkeyEngine
         }
 
         return normalized;
+    }
+
+    private static bool TryBuildRemapAction(RemapEntry entry, out RemapAction action, out string? error)
+    {
+        action = null!;
+        error = null;
+        var sequence = entry.ToSequence ?? new List<string>();
+
+        var hasSingleTarget = !string.IsNullOrWhiteSpace(entry.To);
+        var hasSequenceTarget = sequence.Count > 0;
+
+        if (hasSingleTarget && hasSequenceTarget)
+        {
+            error = $"Shortcut '{entry.From}' cannot define both 'to' and 'toSequence'.";
+            return false;
+        }
+
+        if (!hasSingleTarget && !hasSequenceTarget)
+        {
+            error = $"Shortcut '{entry.From}' must define either 'to' or 'toSequence'.";
+            return false;
+        }
+
+        var steps = new List<HotkeyCombination>();
+
+        if (hasSingleTarget)
+        {
+            if (!HotkeyCombination.TryParse(entry.To, out var target))
+            {
+                error = $"Invalid target shortcut '{entry.To}'.";
+                return false;
+            }
+
+            steps.Add(target);
+            action = new RemapAction(steps);
+            return true;
+        }
+
+        foreach (var stepText in sequence)
+        {
+            if (!HotkeyCombination.TryParse(stepText, out var step))
+            {
+                error = $"Invalid target shortcut '{stepText}' in sequence for '{entry.From}'.";
+                return false;
+            }
+
+            steps.Add(step);
+        }
+
+        action = new RemapAction(steps);
+        return true;
     }
 }

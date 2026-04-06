@@ -20,6 +20,21 @@
       "description": "Close tab"
     },
     {
+      "from": "Alt+Left",
+      "to": "Home",
+      "description": "Move to line start"
+    },
+    {
+      "from": "Alt+Right",
+      "to": "End",
+      "description": "Move to line end"
+    },
+    {
+      "from": "Alt+Backspace",
+      "toSequence": ["Shift+Home", "Backspace"],
+      "description": "Delete to line start"
+    },
+    {
       "from": "Alt+T",
       "to": "Ctrl+T",
       "description": "New tab"

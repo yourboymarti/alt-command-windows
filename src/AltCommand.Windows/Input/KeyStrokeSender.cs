@@ -27,6 +27,14 @@ internal sealed class KeyStrokeSender : IDisposable
         Send(inputs);
     }
 
+    public void SendSequence(IEnumerable<HotkeyCombination> combinations)
+    {
+        foreach (var combination in combinations)
+        {
+            SendCombination(combination);
+        }
+    }
+
     public void SendKeyDown(Keys key)
     {
         Send([CreateKeyInput(key, keyUp: false)]);

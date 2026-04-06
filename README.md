@@ -23,6 +23,7 @@ This keeps the finger motion close to macOS while preserving Windows behavior su
 - Full tray app with no main window
 - Global `Left Alt` remapping
 - Native `Alt` fallback for everything you do not map
+- Multi-step shortcut sequences for macOS-style editing actions
 - JSON config stored in `%LocalAppData%\AltCommand\hotkeys.json`
 - Per-app exclusion list
 - Launch-at-startup toggle
@@ -35,9 +36,12 @@ The first run writes a default config with common `Ctrl`-style shortcuts:
 - `Alt+C`, `Alt+V`, `Alt+X`
 - `Alt+A`, `Alt+S`, `Alt+Z`, `Alt+Y`
 - `Alt+F`, `Alt+N`, `Alt+O`, `Alt+P`
-- `Alt+W`, `Alt+T`, `Alt+R`, `Alt+L`
+- `Alt+W`, `Alt+T`, `Alt+R`, `Alt+L`, `Alt+Q`
 - `Alt+Shift+T`
 - `Alt+1` through `Alt+9`
+- `Alt+Left`, `Alt+Right`, `Alt+Shift+Left`, `Alt+Shift+Right`
+- `Alt+Up`, `Alt+Down`, `Alt+Shift+Up`, `Alt+Shift+Down`
+- `Alt+Backspace`, `Alt+Delete`
 
 ## Config format
 
@@ -49,6 +53,12 @@ Example config:
   "remaps": [
     { "from": "Alt+C", "to": "Ctrl+C", "description": "Copy" },
     { "from": "Alt+V", "to": "Ctrl+V", "description": "Paste" },
+    { "from": "Alt+Left", "to": "Home", "description": "Move to line start" },
+    {
+      "from": "Alt+Backspace",
+      "toSequence": ["Shift+Home", "Backspace"],
+      "description": "Delete to line start"
+    },
     { "from": "Alt+Q", "to": "Alt+F4", "description": "Quit active window" }
   ]
 }
@@ -57,8 +67,9 @@ Example config:
 Notes:
 
 - process names can be written as `Code` or `Code.exe`
+- each remap can use either `to` for one shortcut or `toSequence` for several shortcut steps
 - `Right Alt` is untouched to avoid breaking `AltGr`
-- pressing `Left Alt` alone does nothing in the current MVP
+- `Alt+Left/Right` now behaves like macOS `Command+Left/Right`, so browser back/forward can be restored by removing those mappings or excluding the browser process
 
 ## Build locally
 
@@ -82,7 +93,7 @@ The included workflow:
 
 - the app is designed for Windows and should be built and tested on Windows 11
 - some apps with aggressive keyboard handling may need to be added to `disabledProcesses`
-- if you want full macOS text-navigation behavior, that should be added as a second pass
+- text-navigation mappings are opinionated defaults, so some users may want app-specific exclusions
 
 ## License
 
