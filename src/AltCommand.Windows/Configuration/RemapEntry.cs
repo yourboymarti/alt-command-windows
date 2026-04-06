@@ -27,4 +27,15 @@ internal sealed class RemapEntry
     public List<string> ToSequence { get; set; } = [];
 
     public string? Description { get; set; }
+
+    public RemapEntry Clone()
+    {
+        return new RemapEntry
+        {
+            From = From,
+            To = To,
+            ToSequence = [.. (ToSequence ?? new List<string>())],
+            Description = Description
+        };
+    }
 }

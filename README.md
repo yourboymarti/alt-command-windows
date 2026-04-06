@@ -21,6 +21,7 @@ This keeps the finger motion close to macOS while preserving Windows behavior su
 ## Features
 
 - Full tray app with no main window
+- Built-in settings window for shortcuts and excluded apps
 - Global `Left Alt` remapping
 - Native `Alt` fallback for everything you do not map
 - Multi-step shortcut sequences for macOS-style editing actions
@@ -42,6 +43,15 @@ The first run writes a default config with common `Ctrl`-style shortcuts:
 - `Alt+Left`, `Alt+Right`, `Alt+Shift+Left`, `Alt+Shift+Right`
 - `Alt+Up`, `Alt+Down`, `Alt+Shift+Up`, `Alt+Shift+Down`
 - `Alt+Backspace`, `Alt+Delete`
+
+## Using the app
+
+- launch the app and open the tray icon
+- double-click the tray icon or choose `Settings`
+- edit shortcuts in the table
+- use `|` in the Action column when you want multiple steps, for example `Shift+Home | Backspace`
+- add excluded process names one per line
+- click `Save`
 
 ## Config format
 

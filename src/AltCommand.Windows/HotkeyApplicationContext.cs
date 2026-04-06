@@ -15,6 +15,7 @@ internal sealed class HotkeyApplicationContext : ApplicationContext
     private readonly ToolStripMenuItem _enabledMenuItem;
     private readonly ToolStripMenuItem _launchAtStartupMenuItem;
 
+    private AppConfig _currentConfig = AppConfig.CreateDefault();
     private bool _isEnabled = true;
 
     public HotkeyApplicationContext()
@@ -38,10 +39,12 @@ internal sealed class HotkeyApplicationContext : ApplicationContext
         };
 
         var menu = new ContextMenuStrip();
+        menu.Items.Add(new ToolStripMenuItem("Settings", null, (_, _) => OpenSettings()));
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(_enabledMenuItem);
         menu.Items.Add(_launchAtStartupMenuItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(new ToolStripMenuItem("Open config", null, (_, _) => OpenConfigFile()));
+        menu.Items.Add(new ToolStripMenuItem("Open config file", null, (_, _) => OpenConfigFile()));
         menu.Items.Add(new ToolStripMenuItem("Open config folder", null, (_, _) => OpenConfigFolder()));
         menu.Items.Add(new ToolStripMenuItem("Reload config", null, (_, _) => LoadConfiguration(showSuccessBalloon: true)));
         menu.Items.Add(new ToolStripSeparator());
@@ -55,7 +58,7 @@ internal sealed class HotkeyApplicationContext : ApplicationContext
             ContextMenuStrip = menu
         };
 
-        _notifyIcon.DoubleClick += (_, _) => OpenConfigFile();
+        _notifyIcon.DoubleClick += (_, _) => OpenSettings();
     }
 
     private bool HandleKeyboardEvent(KeyboardEvent keyboardEvent)
@@ -97,6 +100,7 @@ internal sealed class HotkeyApplicationContext : ApplicationContext
         {
             var config = _configStore.Load();
             _hotkeyEngine.UpdateConfiguration(config);
+            _currentConfig = config.Clone();
 
             if (showSuccessBalloon)
             {
@@ -106,6 +110,39 @@ internal sealed class HotkeyApplicationContext : ApplicationContext
         catch (Exception exception)
         {
             ShowBalloon("Alt Command", $"Config error: {exception.Message}", ToolTipIcon.Error);
+        }
+    }
+
+    private void OpenSettings()
+    {
+        try
+        {
+            using var settingsForm = new SettingsForm(
+                _currentConfig.Clone(),
+                _isEnabled,
+                StartupManager.IsEnabled(),
+                _configStore.ConfigPath);
+
+            if (settingsForm.ShowDialog() != DialogResult.OK || settingsForm.SavedConfig is null)
+            {
+                return;
+            }
+
+            _configStore.Save(settingsForm.SavedConfig);
+            _hotkeyEngine.UpdateConfiguration(settingsForm.SavedConfig);
+            _currentConfig = settingsForm.SavedConfig.Clone();
+
+            _isEnabled = settingsForm.RemappingEnabled;
+            _enabledMenuItem.Checked = _isEnabled;
+
+            StartupManager.SetEnabled(settingsForm.LaunchAtStartupEnabled);
+            _launchAtStartupMenuItem.Checked = settingsForm.LaunchAtStartupEnabled;
+
+            ShowBalloon("Alt Command", "Settings saved successfully.", ToolTipIcon.Info);
+        }
+        catch (Exception exception)
+        {
+            ShowBalloon("Alt Command", $"Unable to save settings: {exception.Message}", ToolTipIcon.Error);
         }
     }
 

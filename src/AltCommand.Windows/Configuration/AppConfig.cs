@@ -6,6 +6,15 @@ internal sealed class AppConfig
 
     public List<RemapEntry> Remaps { get; set; } = [];
 
+    public AppConfig Clone()
+    {
+        return new AppConfig
+        {
+            DisabledProcesses = [.. (DisabledProcesses ?? new List<string>())],
+            Remaps = [.. (Remaps ?? new List<RemapEntry>()).Select(remap => remap.Clone())]
+        };
+    }
+
     public static AppConfig CreateDefault()
     {
         return new AppConfig
